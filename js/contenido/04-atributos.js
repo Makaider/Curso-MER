@@ -1,0 +1,221 @@
+/* Módulo 4 — Atributos */
+(function () {
+  const { list, olist, table, box, fig, cmp, ent, rel, att } = R;
+  const one = (label, attrs, w, h) => D.diagram({ w: w || 520, h: h || 150, nodes: [{ id: 'a', t: 'E', l: label, x: (w || 520) / 2, y: (h || 150) - 38, attrs, side: 'top' }] });
+
+  MER.add({
+    id: 'atributos', num: 4, orden: 4, grupo: 'Conceptos',
+    titulo: 'Atributos', resumen: 'Tipos de atributos y claves: simple, compuesto, multivaluado, derivado, primaria, candidata y parcial.',
+    objetivo: 'Decidir qué datos guarda cada entidad, de qué tipo es cada atributo y cuál es la clave.',
+    requiere: ['simbologia', 'entidades'],
+    items: [
+      {
+        titulo: '¿Qué es un atributo?', corto: 'Qué es',
+        que: '<p>Un <strong>atributo</strong> es una <strong>característica</strong> o dato que describe a una entidad (o a una relación). Cada ejemplar tiene un <strong>valor</strong> para cada atributo.</p>',
+        porque: '<p>La entidad dice “de qué” guardamos información; los atributos dicen “<strong>qué</strong> información” guardamos.</p>',
+        como: table(['Entidad', 'Atributo', 'Valor para un ejemplar'], [['ESTUDIANTE', 'código', '1001'], ['ESTUDIANTE', 'nombre', 'Ana Ruiz'], ['ESTUDIANTE', 'fecha_nac', '2004-05-10']]),
+        identificar: list(['Frases “de cada X se guarda…”, “se registra…”, “se conoce…”.', 'Sustantivos que responden a <strong>¿cuál es su …?</strong>: ¿cuál es su nombre? ¿su precio?', 'Adjetivos o valores del enunciado (“rojo”, “activo”) suelen indicar un atributo (color, estado).']),
+        ejemplo: {
+          cotidiano: '<p>Tu <strong>celular</strong> tiene marca, modelo, color y capacidad: son sus atributos.</p>',
+          bd: fig(one('LIBRO', ['*isbn', 'título', 'editorial', 'año'])),
+        },
+        grafico: '<p>Un <strong>óvalo</strong> unido por una línea a <strong>una única</strong> entidad o relación.</p>',
+        cuando: { si: ['El dato tiene un solo valor simple que describe a la entidad.'], no: ['El dato tiene sus propios datos (entonces es otra entidad).', 'El dato es la clave de otra entidad (entonces es una relación).'] },
+        error: {
+          mal: `<p>Poner ${att('id_cliente')} como atributo de ${ent('PEDIDO')}.</p>`,
+          bien: `<p>Dibujar la relación ${ent('CLIENTE')} — ${rel('realiza')} — ${ent('PEDIDO')}. En el MER las conexiones se hacen con rombos, no con atributos “foráneos”.</p>`,
+        },
+        ejercicio: {
+          enunciado: '“De cada médico se registra su número de registro, nombre, especialidad y teléfono.” Indica la entidad y sus atributos.',
+          respuesta: `<p>${ent('MÉDICO')}: ${att('nro_registro')} ${att('nombre')} ${att('especialidad')} ${att('teléfono')}</p>`,
+          explicacion: '<p>“De cada médico se registra…” anuncia que lo que sigue son atributos de MÉDICO. Especialidad es atributo porque no se piden datos propios de la especialidad.</p>',
+        },
+      },
+      {
+        titulo: 'Atributo simple (atómico)', corto: 'Simple',
+        que: '<p>Un atributo <strong>simple</strong> o atómico es el que <strong>no se puede dividir</strong> en partes con significado propio.</p>',
+        porque: '<p>Es la forma más básica de guardar un dato. La mayoría de atributos son simples.</p>',
+        como: '<p>Tiene un único valor indivisible: el precio 25.000, el color “rojo”, el código 1001.</p>',
+        identificar: '<p>Pregúntate: <strong>¿tiene sentido dividirlo?</strong> Si al partirlo pierde significado (el precio en dígitos), es simple.</p>',
+        ejemplo: { cotidiano: '<p>Tu <strong>edad en años</strong> o tu <strong>talla de zapatos</strong>: no se dividen.</p>', bd: fig(one('PRODUCTO', ['*código', 'precio', 'color', 'peso'])) },
+        grafico: '<p>Óvalo simple con borde continuo, sin otros óvalos colgando.</p>',
+        cuando: { si: ['El dato no se divide o nunca se consultan sus partes.'], no: ['Necesitas usar sus partes por separado (compuesto).'] },
+        error: { mal: '<p>Dividir un dato sin necesidad: “código” en “dígito1, dígito2…”.</p>', bien: '<p>Un código es simple: se usa completo.</p>' },
+        ejercicio: {
+          enunciado: '¿Cuáles son simples? a) salario b) dirección (calle, número, ciudad) c) estado civil d) nombre completo (nombres, apellidos)',
+          respuesta: '<p>Simples: a) salario y c) estado civil.</p>',
+          explicacion: '<p>b) y d) se dividen en partes con significado propio (son compuestos).</p>',
+        },
+      },
+      {
+        titulo: 'Atributo compuesto', corto: 'Compuesto',
+        que: '<p>Un atributo <strong>compuesto</strong> se forma de <strong>varias partes</strong>, cada una con significado propio, que a su vez son atributos.</p>',
+        porque: '<p>Permite usar el dato completo o solo una de sus partes (por ejemplo, buscar clientes por <em>ciudad</em>).</p>',
+        como: `<p>${att('dirección')} = ${att('calle')} + ${att('número')} + ${att('ciudad')}</p>`,
+        identificar: list(['El enunciado nombra las partes: “la dirección (calle, número y ciudad)”.', 'Datos típicos: nombre completo, dirección, fecha (a veces), teléfono con indicativo.']),
+        ejemplo: {
+          cotidiano: '<p>Tu <strong>nombre completo</strong>: nombres + primer apellido + segundo apellido.</p>',
+          bd: fig(D.diagram({ w: 580, h: 230, nodes: [{ id: 'a', t: 'E', l: 'CLIENTE', x: 290, y: 190, side: 'top', attrs: ['*cédula', { l: 'nombre', sub: ['nombres', 'apellidos'] }, { l: 'dirección', sub: ['calle', 'ciudad'] }] }] })),
+        },
+        grafico: '<p>Un óvalo unido a la entidad y, desde él, líneas hacia los óvalos de sus partes.</p>',
+        cuando: { si: ['Las partes se consultan o filtran por separado.', 'El enunciado detalla las partes.'], no: ['Las partes nunca se usan por separado (usa un atributo simple).'] },
+        error: {
+          mal: '<p>Conectar las partes directamente a la entidad y también el todo: CLIENTE—dirección y CLIENTE—calle, CLIENTE—ciudad.</p>',
+          bien: '<p>Las partes cuelgan <strong>del atributo compuesto</strong>, no de la entidad.</p>',
+        },
+        ejercicio: {
+          enunciado: '“De cada empleado se guarda código, nombre (nombres y apellidos), fecha de ingreso y dirección (calle, barrio, ciudad).” Dibuja o describe los atributos compuestos.',
+          respuesta: '<p><strong>nombre</strong> → nombres, apellidos. <strong>dirección</strong> → calle, barrio, ciudad. código (clave) y fecha_ingreso son simples.</p>',
+          explicacion: '<p>El enunciado indica entre paréntesis las partes: esa es la señal de atributo compuesto.</p>',
+        },
+      },
+      {
+        titulo: 'Atributo monovalorado', corto: 'Monovalorado',
+        que: '<p>Un atributo <strong>monovalorado</strong> (o univaluado) tiene <strong>un solo valor</strong> para cada ejemplar.</p>',
+        porque: '<p>Es el caso normal. Se menciona para diferenciarlo del multivaluado.</p>',
+        como: '<p>Cada persona tiene <strong>una</strong> fecha de nacimiento; cada producto tiene <strong>un</strong> precio actual.</p>',
+        identificar: '<p>Pregunta: <strong>¿un mismo ejemplar puede tener dos valores a la vez?</strong> Si la respuesta es no, es monovalorado.</p>',
+        ejemplo: { cotidiano: '<p>Tu <strong>fecha de nacimiento</strong>: solo tienes una.</p>', bd: fig(one('PERSONA', ['*documento', 'fecha_nac', 'género'])) },
+        grafico: '<p>Óvalo simple (borde sencillo).</p>',
+        cuando: { si: ['Un ejemplar tiene exactamente un valor (o ninguno).'], no: ['El enunciado dice “uno o varios”, “puede tener varios”.'] },
+        error: { mal: '<p>Suponer que “correo” siempre es monovalorado.</p>', bien: '<p>Depende del enunciado: si dice “uno o varios correos”, es multivaluado.</p>' },
+        ejercicio: {
+          enunciado: 'Un paciente tiene: número de historia, fecha de nacimiento, alergias (puede tener varias) y tipo de sangre. ¿Cuáles son monovalorados?',
+          respuesta: '<p>Número de historia, fecha de nacimiento y tipo de sangre.</p>',
+          explicacion: '<p>“Alergias” admite varios valores por paciente, por eso es multivaluado.</p>',
+        },
+      },
+      {
+        titulo: 'Atributo multivaluado', corto: 'Multivaluado',
+        que: '<p>Un atributo <strong>multivaluado</strong> puede tener <strong>varios valores</strong> para un mismo ejemplar.</p>',
+        porque: '<p>Para reflejar que, por ejemplo, un cliente tiene varios teléfonos sin crear columnas <code>teléfono1, teléfono2, teléfono3</code>.</p>',
+        como: '<p>Ana → teléfonos {3001112233, 6015556677}. Luis → teléfonos {3109998877}.</p>',
+        identificar: list(['“uno o varios”, “puede tener varios”, “una lista de”.', 'Sustantivo en <strong>plural</strong> que describe al ejemplar: “idiomas que habla”, “correos”.']),
+        ejemplo: { cotidiano: '<p>Los <strong>idiomas</strong> que habla una persona.</p>', bd: fig(one('EMPLEADO', ['*código', 'nombre', '{idioma}', '{teléfono}'])) },
+        grafico: '<p><strong>Óvalo doble</strong>.</p>',
+        cuando: { si: ['Los valores son simples (un número, una palabra).'], no: ['Cada valor tiene datos propios o se relaciona con otras entidades → crea una entidad.'] },
+        error: {
+          mal: `<p>${att('teléfono1')} ${att('teléfono2')} ${att('teléfono3')}</p>`,
+          bien: '<p>Un solo atributo multivaluado <strong>teléfono</strong> (óvalo doble).</p>',
+          porque: 'Si te encuentras numerando atributos (1, 2, 3), probablemente es multivaluado.',
+        },
+        ejercicio: {
+          enunciado: '“De cada película se guarda título, año, los géneros a los que pertenece (puede ser acción y comedia a la vez) y su duración.” ¿Qué atributo es multivaluado?',
+          respuesta: '<p><strong>género</strong>.</p>',
+          explicacion: '<p>Una misma película puede tener varios géneros. Si el enunciado pidiera datos de cada género (descripción, edad mínima), GÉNERO pasaría a ser una entidad.</p>',
+        },
+      },
+      {
+        titulo: 'Atributo derivado', corto: 'Derivado',
+        que: '<p>Un atributo <strong>derivado</strong> es aquel cuyo valor <strong>se calcula</strong> a partir de otros atributos o relaciones. No se escribe a mano.</p>',
+        porque: '<p>Evita guardar datos que se desactualizan (la edad cambia cada año; la fecha de nacimiento no).</p>',
+        como: table(['Derivado', 'Se calcula con'], [['edad', 'fecha_nac y la fecha actual'], ['total_factura', 'suma de las líneas de la factura'], ['antigüedad', 'fecha_ingreso'], ['nro_empleados', 'contar empleados relacionados']]),
+        identificar: list(['“se desea conocer / calcular / saber”.', 'Datos que son <strong>resultado</strong> de una operación: total, promedio, cantidad, edad, antigüedad.']),
+        ejemplo: { cotidiano: '<p>Tu <strong>edad</strong> se calcula con tu fecha de nacimiento.</p>', bd: fig(one('FACTURA', ['*número', 'fecha', '/total'])) },
+        grafico: '<p><strong>Óvalo punteado</strong> (borde discontinuo).</p>',
+        cuando: { si: ['El valor puede calcularse con datos que ya existen en el modelo.'], no: ['El dato no se puede calcular (por ejemplo, una nota ingresada por el profesor).'] },
+        error: { mal: '<p>Guardar <strong>edad</strong> como atributo normal y olvidar la fecha de nacimiento.</p>', bien: '<p>Guardar <strong>fecha_nac</strong> (normal) y marcar <strong>edad</strong> como derivado.</p>' },
+        ejercicio: {
+          enunciado: '“De cada estudiante se guarda código, fecha de ingreso y se desea conocer su promedio y cuántos semestres lleva.” ¿Cuáles son derivados y de qué se derivan?',
+          respuesta: '<p><strong>promedio</strong> (de las notas de sus cursos) y <strong>semestres</strong> (de la fecha de ingreso).</p>',
+          explicacion: '<p>“se desea conocer” es la pista. Ninguno se escribe a mano: se calculan.</p>',
+        },
+      },
+      {
+        titulo: 'Atributo clave (identificador)', corto: 'Atributo clave',
+        que: '<p>Un <strong>atributo clave</strong> (identificador) es aquel cuyo valor es <strong>único</strong> para cada ejemplar: no hay dos ejemplares con el mismo valor.</p>',
+        porque: '<p>Sin un identificador no podríamos distinguir a dos clientes llamados “Juan Pérez”.</p>',
+        como: '<p>Debe cumplir tres condiciones:</p>' + olist(['<strong>Único</strong>: no se repite.', '<strong>Obligatorio</strong>: todo ejemplar lo tiene.', '<strong>Estable</strong>: no cambia (o casi nunca).']),
+        identificar: list(['Palabras: código, número, id, cédula, NIT, placa, ISBN, matrícula.', '“que lo identifica”, “único”.']),
+        ejemplo: { cotidiano: '<p>La <strong>placa</strong> de un carro o el <strong>número de celular</strong>.</p>', bd: fig(one('VEHÍCULO', ['*placa', 'marca', 'modelo'])) },
+        grafico: '<p>Óvalo con el nombre <strong>subrayado</strong>.</p>',
+        cuando: { si: ['El dato cumple único + obligatorio + estable.'], no: ['Nombre, fecha, ciudad: se repiten.', 'Correo o teléfono: pueden cambiar.'] },
+        error: { mal: '<p>Usar <strong>nombre</strong> como clave.</p>', bien: '<p>Usar un código o documento. Si el enunciado no da ninguno, crea uno artificial (id_…).</p>' },
+        ejercicio: {
+          enunciado: 'Para la entidad LIBRO con atributos: título, ISBN, autor, año. ¿Cuál es el atributo clave?',
+          respuesta: '<p><strong>ISBN</strong>.</p>',
+          explicacion: '<p>Dos libros pueden tener el mismo título o autor, pero el ISBN es único por edición.</p>',
+        },
+      },
+      {
+        titulo: 'Clave candidata', corto: 'Clave candidata',
+        que: '<p>Una <strong>clave candidata</strong> es <strong>cualquier</strong> atributo (o conjunto mínimo de atributos) que podría servir como identificador. Una entidad puede tener <strong>varias</strong>.</p>',
+        porque: '<p>Antes de elegir la clave primaria hay que conocer todas las opciones posibles.</p>',
+        como: `<p>ESTUDIANTE tiene: código, cédula, correo institucional. Los tres son únicos → los tres son <strong>candidatas</strong>.</p>`,
+        identificar: '<p>Para cada atributo pregunta: <strong>¿podría repetirse entre dos ejemplares?</strong> Si nunca puede repetirse, es candidata.</p>',
+        ejemplo: { cotidiano: '<p>Tú puedes ser identificado por tu documento, tu pasaporte o tu número de celular: son “candidatos”.</p>', bd: table(['Atributo de EMPLEADO', '¿Candidata?'], [['código_empleado', 'Sí'], ['cédula', 'Sí'], ['correo_corporativo', 'Sí'], ['nombre', 'No'], ['salario', 'No']]) },
+        grafico: '<p>En Chen solo se subraya la primaria. Las demás candidatas se dibujan como atributos normales (algunos autores las anotan aparte).</p>',
+        cuando: { si: ['Estás evaluando qué atributo elegir como clave.'], no: ['—'] },
+        error: { mal: '<p>Pensar que toda entidad tiene solo una clave posible.</p>', bien: '<p>Puede haber varias candidatas; solo <strong>una</strong> se elige como primaria.</p>' },
+        ejercicio: {
+          enunciado: 'VEHÍCULO: placa, número de motor, número de chasis (VIN), color, marca. ¿Cuáles son claves candidatas?',
+          respuesta: '<p>placa, número de motor y VIN.</p>',
+          explicacion: '<p>Los tres son únicos por vehículo. Color y marca se repiten.</p>',
+        },
+      },
+      {
+        titulo: 'Clave primaria', corto: 'Clave primaria',
+        que: '<p>La <strong>clave primaria</strong> es la clave candidata <strong>elegida</strong> para identificar oficialmente a cada ejemplar de la entidad.</p>',
+        porque: '<p>Toda entidad fuerte necesita exactamente una clave primaria para que las relaciones puedan “apuntar” a sus ejemplares.</p>',
+        como: '<p>Entre las candidatas se elige la que sea:</p>' + list(['más <strong>corta y simple</strong>,', 'más <strong>estable</strong> (no cambia),', '<strong>siempre conocida</strong> desde el registro.']),
+        identificar: '<p>Si el enunciado dice “se identifica por…” o “con un código único”, esa es la clave primaria.</p>',
+        ejemplo: { cotidiano: '<p>En la universidad hay código y cédula; se usa el <strong>código</strong> en los listados: es la primaria.</p>', bd: fig(one('ESTUDIANTE', ['*código', 'cédula', 'correo', 'nombre'])) },
+        grafico: '<p>Óvalo con el nombre <strong>subrayado con línea continua</strong>. Solo una por entidad (puede ser compuesta de varios atributos: todos se subrayan).</p>',
+        cuando: { si: ['Siempre, en toda entidad fuerte.'], no: ['En entidades débiles: tienen clave parcial.'] },
+        error: { mal: '<p>Subrayar dos atributos independientes creyendo que “hay dos claves primarias”.</p>', bien: '<p>Una entidad tiene <strong>una</strong> clave primaria. Si subrayas dos atributos, significa que la clave es la <strong>combinación</strong> de ambos.</p>' },
+        ejercicio: {
+          enunciado: 'EMPLEADO tiene código (asignado al ingresar), cédula (a veces llega días después) y correo (puede cambiar). ¿Cuál elegirías como primaria y por qué?',
+          respuesta: '<p><strong>código</strong>.</p>',
+          explicacion: '<p>Es obligatorio desde el registro y estable. La cédula no siempre está disponible al registrar y el correo puede cambiar.</p>',
+        },
+      },
+      {
+        titulo: 'Clave parcial (entidades débiles)', corto: 'Clave parcial',
+        que: '<p>La <strong>clave parcial</strong> (o discriminante) es el atributo que distingue a los ejemplares de una entidad débil <strong>que pertenecen al mismo propietario</strong>.</p>',
+        porque: '<p>La entidad débil no tiene clave propia; la parcial solo es única “dentro” de su propietario.</p>',
+        como: '<p>Clave completa de la débil = <strong>clave del propietario + clave parcial</strong>.</p>' + table(['nit hotel', 'número (parcial)', 'Identifica'], [['900-1', '101', 'hab. 101 del hotel 900-1'], ['900-2', '101', 'hab. 101 del hotel 900-2 (otra distinta)']]),
+        identificar: '<p>Es el número o nombre que se repite entre propietarios: nro. de habitación, nro. de cuota, nro. de línea, nro. de episodio.</p>',
+        ejemplo: {
+          cotidiano: '<p>El número de <strong>asiento</strong> en un bus: se repite en todos los buses.</p>',
+          bd: fig(D.diagram({ w: 600, h: 160, nodes: [
+            { id: 's', t: 'E', l: 'SERIE', x: 90, y: 115, attrs: ['*id_serie', 'título'], side: 'top' }, { id: 'r', t: 'R', l: 'tiene', x: 300, y: 115, ident: true },
+            { id: 'e', t: 'E', l: 'EPISODIO', x: 500, y: 115, weak: true, attrs: ['~nro_episodio', 'duración'], side: 'top' }],
+            edges: [{ a: 's', b: 'r', ca: '1' }, { a: 'e', b: 'r', ca: 'N', total: true }] })),
+        },
+        grafico: '<p>Óvalo con el nombre <strong>subrayado con línea punteada</strong>, dentro de una entidad débil.</p>',
+        cuando: { si: ['Siempre que exista una entidad débil.'], no: ['En entidades fuertes.'] },
+        error: { mal: '<p>Subrayar con línea continua la clave de una entidad débil.</p>', bien: '<p>Subrayado <strong>punteado</strong>: recuerda que es solo una parte del identificador.</p>' },
+        ejercicio: {
+          enunciado: 'Cada factura tiene varias líneas numeradas 1, 2, 3… ¿Cuál es la clave parcial de LÍNEA y cuál su identificador completo?',
+          respuesta: '<p>Clave parcial: <strong>nro_línea</strong>. Identificador completo: <strong>(nro_factura, nro_línea)</strong>.</p>',
+          explicacion: '<p>La línea 1 existe en todas las facturas; solo con el número de factura se sabe cuál es.</p>',
+        },
+      },
+      {
+        titulo: 'Comparativa y ejercicios progresivos', corto: 'Comparativa y práctica', tipo: 'multi',
+        partes: [
+          {
+            extra: table(['Tipo', 'Pregunta para reconocerlo', 'Símbolo', 'Ejemplo'], [
+              ['Simple', '¿Es indivisible?', 'Óvalo', 'precio'], ['Compuesto', '¿Se divide en partes útiles?', 'Óvalo con óvalos hijos', 'dirección'],
+              ['Monovalorado', '¿Tiene un solo valor?', 'Óvalo', 'fecha_nac'], ['Multivaluado', '¿Puede tener varios valores?', 'Óvalo doble', 'teléfonos'],
+              ['Derivado', '¿Se calcula?', 'Óvalo punteado', 'edad'], ['Clave primaria', '¿Identifica de forma única?', 'Subrayado', 'cédula'],
+              ['Clave parcial', '¿Identifica solo dentro del propietario?', 'Subrayado punteado', 'nro_habitación'],
+            ]) + box('tip', 'Un mismo atributo tiene varias “etiquetas”', '<p>Las categorías se combinan: <strong>dirección</strong> puede ser compuesta y monovalorada; <strong>teléfono</strong> puede ser simple y multivaluado.</p>'),
+          },
+          { h: 'Ejercicio 1 — Clasificar', ejercicio: {
+            enunciado: 'Clasifica: a) cédula de PERSONA b) correos (varios) c) nombre (nombres y apellidos) d) edad e) salario',
+            respuesta: '<p>a) Clave primaria (simple) · b) Multivaluado · c) Compuesto · d) Derivado · e) Simple monovalorado</p>',
+            explicacion: '<p>Aplica las preguntas de la tabla en orden: ¿identifica? ¿varios valores? ¿se divide? ¿se calcula?</p>' } },
+          { h: 'Ejercicio 2 — Del enunciado al diagrama', ejercicio: {
+            enunciado: '“De cada socio de un club se registra su número de socio, nombre completo (nombres y apellidos), fecha de nacimiento, los deportes que practica y se desea conocer su edad.” Dibuja la entidad con sus atributos.',
+            respuesta: fig(D.diagram({ w: 620, h: 220, nodes: [{ id: 'a', t: 'E', l: 'SOCIO', x: 310, y: 180, side: 'top', attrs: ['*nro_socio', { l: 'nombre', sub: ['nombres', 'apellidos'] }, 'fecha_nac', '{deporte}', '/edad'] }] })),
+            explicacion: list(['nro_socio: único → clave primaria.', 'nombre: se detallan sus partes → compuesto.', 'deporte: “los deportes que practica” (varios) → multivaluado.', 'edad: “se desea conocer” y sale de fecha_nac → derivado.']) } },
+          { h: 'Ejercicio 3 — ¿Atributo o entidad?', ejercicio: {
+            enunciado: '“Cada empleado tiene un cargo. De cada cargo se guarda nombre, salario base y nivel.” ¿Cargo es atributo o entidad?',
+            respuesta: '<p><strong>Entidad</strong> CARGO, relacionada con EMPLEADO.</p>',
+            explicacion: '<p>Si “cargo” solo fuera un nombre, sería atributo. Pero tiene <strong>sus propios datos</strong> (salario base, nivel) y muchos empleados comparten el mismo cargo → entidad.</p>' } },
+        ],
+      },
+    ],
+  });
+})();

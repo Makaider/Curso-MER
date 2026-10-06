@@ -1,0 +1,115 @@
+/* Módulo 13 — Errores comunes */
+(function () {
+  const { list, olist, table, box, fig, cmp, ent, rel, att } = R;
+  const bin = (a, r, b, ca, cb, o) => D.diagram({ w: 520, h: (o && o.h) || 110, nodes: [
+    Object.assign({ id: 'a', t: 'E', l: a, x: 85, y: (o && o.y) || 55 }, o && o.na), Object.assign({ id: 'r', t: 'R', l: r, x: 260, y: (o && o.y) || 55 }, o && o.nr),
+    Object.assign({ id: 'b', t: 'E', l: b, x: 435, y: (o && o.y) || 55 }, o && o.nb)],
+    edges: [{ a: 'a', b: 'r', ca, total: o && o.ta, cls: o && o.ea }, { a: 'b', b: 'r', ca: cb, total: o && o.tb, cls: o && o.eb }] });
+
+  const err = (t, corto, sintoma, causa, detectar, mal, bien, porque, ej) => ({
+    titulo: t, corto, que: sintoma, porque: causa, identificar: detectar,
+    error: { mal, bien, porque, malT: 'Modelo incorrecto', bienT: 'Modelo corregido' },
+    ejercicio: ej,
+  });
+
+  MER.add({
+    id: 'errores', num: 13, orden: 13, grupo: 'Método de resolución',
+    titulo: 'Errores comunes', resumen: 'Los 10 errores más frecuentes, con el modelo incorrecto y su corrección.',
+    objetivo: 'Reconocer y corregir los errores que más se repiten en exámenes y proyectos.',
+    requiere: ['construccion'],
+    items: [
+      err('Confundir entidad con atributo', 'Entidad ↔ atributo',
+        '<p>Convertir en entidad algo que solo es un dato, o al revés: dejar como atributo algo que tiene sus propios datos.</p>',
+        '<p>Todo sustantivo parece una entidad. Se olvida la prueba de “¿tiene varios datos propios?”.</p>',
+        list(['Entidad con <strong>un solo atributo</strong> (sospechoso: quizá es atributo).', 'Atributo que repite información en muchos ejemplares con datos “pegados” (ciudad_nombre, ciudad_población → quizá CIUDAD es entidad).']),
+        fig(bin('EMPLEADO', 'tiene', 'SALARIO', 'N', '1', { nb: { bad: true } })),
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'EMPLEADO', x: 260, y: 105, attrs: ['*código', 'nombre', 'salario'], side: 'top' }] })),
+        'SALARIO no tiene datos propios ni existe por sí mismo: es un valor que describe al empleado → atributo.',
+        { enunciado: '“De cada libro se guarda la editorial. De cada editorial se guarda NIT, nombre y país.” ¿Editorial es entidad o atributo?', respuesta: '<p><strong>Entidad</strong> EDITORIAL relacionada con LIBRO (1:N).</p>', explicacion: '<p>La segunda frase le da datos propios a la editorial.</p>' }),
+
+      err('Confundir atributo con relación', 'Atributo ↔ relación',
+        '<p>Guardar como atributo la conexión con otra entidad (una “clave foránea”), en lugar de dibujar la relación.</p>',
+        '<p>Se piensa directamente en tablas (nivel lógico) en vez de en el modelo conceptual.</p>',
+        '<p>Atributos con nombre de otra entidad: <code>id_cliente</code>, <code>cod_departamento</code>, <code>profesor</code>.</p>',
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'PEDIDO', x: 260, y: 105, attrs: ['*nro', 'fecha', { l: 'id_cliente', hl: true }], side: 'top' }] })),
+        fig(bin('CLIENTE', 'realiza', 'PEDIDO', '1', 'N')),
+        'En el MER las conexiones entre entidades son relaciones. La clave foránea aparecerá sola al pasar al modelo relacional.',
+        { enunciado: 'La entidad CURSO tiene los atributos: código, nombre, cédula_profesor. ¿Qué corriges?', respuesta: '<p>Quitar <em>cédula_profesor</em> y crear la relación PROFESOR — <em>dicta</em> — CURSO.</p>', explicacion: '<p>cédula_profesor es la clave de otra entidad: indica una relación escondida.</p>' }),
+
+      err('Colocar mal una cardinalidad', 'Cardinalidad invertida',
+        '<p>Poner el 1 y la N en los lados equivocados.</p>',
+        '<p>No se sigue una regla de lectura fija, o se mezclan convenciones de distintos libros.</p>',
+        '<p>Lee en voz alta cruzando: “UN cliente realiza N ___”. Si la frase resultante es falsa, está invertida.</p>',
+        fig(bin('CLIENTE', 'realiza', 'PEDIDO', 'N', '1', { ea: 'bad', eb: 'bad' })) + '<p>Se leería: “un cliente realiza 1 pedido, un pedido es de N clientes” ✗</p>',
+        fig(bin('CLIENTE', 'realiza', 'PEDIDO', '1', 'N')) + '<p>“Un cliente realiza N pedidos, un pedido es de 1 cliente” ✓</p>',
+        'Haz siempre las dos preguntas y escribe cada respuesta junto a la entidad que estás contando.',
+        { enunciado: 'Un alumno dibujó PAÍS —N— tiene —1— CIUDAD. ¿Es correcto?', respuesta: '<p><strong>No.</strong> Debe ser PAÍS —1— tiene —N— CIUDAD.</p>', explicacion: '<p>Un país tiene N ciudades (N junto a CIUDAD); una ciudad pertenece a 1 país (1 junto a PAÍS).</p>' }),
+
+      err('Crear entidades innecesarias', 'Entidades innecesarias',
+        '<p>Incluir entidades que no aportan: el propio sistema, entidades con un solo atributo, duplicados con otro nombre.</p>',
+        '<p>Querer “representar todo” lo que aparece en el texto.</p>',
+        list(['Entidad que representa la organización única (EMPRESA, TIENDA cuando solo hay una).', 'Dos entidades con los mismos datos (CLIENTE y COMPRADOR).', 'Entidad que no participa en ninguna relación y no aporta datos.']),
+        fig(bin('TIENDA', 'vende', 'PRODUCTO', '1', 'N', { na: { bad: true } })),
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'PRODUCTO', x: 260, y: 105, attrs: ['*código', 'nombre', 'precio'], side: 'top' }] })),
+        'Si el sistema es de una sola tienda, TIENDA solo tendría un ejemplar: no es entidad. (Sería entidad si fuera una cadena con varias sucursales.)',
+        { enunciado: '“La empresa ACME registra a sus empleados y a sus trabajadores (código, nombre).” ¿Cuántas entidades?', respuesta: '<p><strong>Una</strong>: EMPLEADO.</p>', explicacion: '<p>ACME es el sistema; “empleados” y “trabajadores” son sinónimos con los mismos datos.</p>' }),
+
+      err('No identificar una entidad débil', 'Débil no detectada',
+        '<p>Modelar como fuerte algo cuyo identificador solo es único dentro de otra entidad.</p>',
+        '<p>Se ve un “número” y se asume que es clave primaria.</p>',
+        '<p>Pregunta: ¿ese número se <strong>reinicia</strong> para cada padre? Si sí → débil.</p>',
+        fig(bin('EDIFICIO', 'tiene', 'OFICINA', '1', 'N', { nb: { bad: true, attrs: ['*nro_oficina'], side: 'top' }, h: 150, y: 110 })),
+        fig(bin('EDIFICIO', 'tiene', 'OFICINA', '1', 'N', { nb: { weak: true, attrs: ['~nro_oficina'], side: 'top' }, nr: { ident: true }, tb: true, h: 150, y: 110 })),
+        'La oficina 301 existe en varios edificios: nro_oficina no es único por sí solo.',
+        { enunciado: '“Cada factura tiene detalles numerados 1, 2, 3.” Un estudiante dibujó DETALLE como fuerte con clave nro_detalle. Corrige.', respuesta: '<p>DETALLE es <strong>débil</strong> de FACTURA; nro_detalle es clave parcial; la relación es identificadora con línea doble del lado de DETALLE.</p>', explicacion: '<p>Revisa los cuatro elementos de la débil: rectángulo doble, rombo doble, línea doble, subrayado punteado.</p>' }),
+
+      err('Confundir 1:N con N:M', '1:N ↔ N:M',
+        '<p>Poner 1:N cuando ambos lados admiten varios (o N:M cuando uno de los lados está limitado a uno).</p>',
+        '<p>Se hace solo una de las dos preguntas.</p>',
+        '<p>Si solo leíste una frase del enunciado para decidir, probablemente falta la otra dirección.</p>',
+        fig(bin('ESTUDIANTE', 'matricula', 'CURSO', '1', 'N', { ea: 'bad' })),
+        fig(bin('ESTUDIANTE', 'matricula', 'CURSO', 'N', 'M')),
+        'Un curso también tiene muchos estudiantes. Muchos en ambos sentidos → N:M.',
+        { enunciado: '“Un médico atiende muchos pacientes.” Un estudiante dibujó 1:N. ¿Qué pregunta le faltó?', respuesta: '<p>“Un paciente, ¿cuántos médicos lo atienden?” En la mayoría de clínicas, varios → N:M.</p>', explicacion: '<p>Si el enunciado dice “cada paciente tiene un único médico”, entonces sí sería 1:N. La segunda pregunta decide.</p>' }),
+
+      err('No identificar claves', 'Sin clave',
+        '<p>Dibujar entidades sin clave primaria, o con una clave que se repite (nombre, fecha).</p>',
+        '<p>Se olvida que cada ejemplar debe poder distinguirse.</p>',
+        '<p>Revisa cada rectángulo simple: ¿tiene exactamente un atributo (o combinación) subrayado y es realmente único?</p>',
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'CLIENTE', x: 260, y: 105, attrs: ['*nombre', 'teléfono', 'ciudad'], side: 'top', bad: true }] })),
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'CLIENTE', x: 260, y: 105, attrs: ['*cédula', 'nombre', 'teléfono', 'ciudad'], side: 'top' }] })),
+        'Dos clientes pueden llamarse igual. Si el enunciado no da un identificador, agrega uno (id_cliente) y anota el supuesto.',
+        { enunciado: 'PRODUCTO tiene nombre, precio y fecha_ingreso. ¿Qué clave usarías?', respuesta: '<p>Ninguno sirve: se debe agregar <strong>código</strong> (o id_producto).</p>', explicacion: '<p>Nombre, precio y fecha pueden repetirse entre productos.</p>' }),
+
+      err('Usar generalización cuando no corresponde', 'Generalización de más',
+        '<p>Crear subclases que no tienen atributos ni relaciones propios, o que no cumplen “ES-UN”.</p>',
+        '<p>Ver la palabra “tipo” y aplicar jerarquía automáticamente.</p>',
+        '<p>Borra mentalmente la subclase: ¿se pierde algún atributo o relación? Si no, sobraba.</p>',
+        fig(D.diagram({ w: 460, h: 300, nodes: [{ id: 's', t: 'E', l: 'CLIENTE', x: 230, y: 50, attrs: ['*cédula'], side: 'right' }, { id: 'c', t: 'ISA', l: 'd', x: 230, y: 140 }, { id: 'a', t: 'E', l: 'CLIENTE_ORO', x: 110, y: 240, bad: true }, { id: 'b', t: 'E', l: 'CLIENTE_PLATA', x: 350, y: 240, bad: true }],
+          edges: [{ a: 's', b: 'c' }, { a: 'c', b: 'a', subset: true }, { a: 'c', b: 'b', subset: true }] })),
+        fig(D.diagram({ w: 520, h: 140, nodes: [{ id: 'a', t: 'E', l: 'CLIENTE', x: 260, y: 105, attrs: ['*cédula', 'nombre', 'categoría'], side: 'top' }] })),
+        'Oro y plata no tienen datos propios: es un atributo <em>categoría</em>.',
+        { enunciado: '“Las habitaciones de un hotel son sencillas, dobles o suites.” ¿Generalización?', respuesta: '<p><strong>No</strong>, salvo que cada tipo tenga datos propios. Atributo <em>tipo</em>.</p>', explicacion: '<p>Si el enunciado añadiera “las suites tienen número de ambientes y jacuzzi”, entonces SUITE sí podría ser subclase.</p>' }),
+
+      err('No utilizar generalización cuando sí corresponde', 'Generalización que falta',
+        '<p>Poner todos los atributos de todos los tipos en una sola entidad (muchos quedan vacíos) o duplicar entidades casi iguales.</p>',
+        '<p>Miedo a la notación o no reconocer la frase “tipos de… con datos propios”.</p>',
+        '<p>Atributos que “solo aplican a algunos” ejemplares, o dos entidades con los mismos atributos base.</p>',
+        fig(D.diagram({ w: 560, h: 150, nodes: [{ id: 'a', t: 'E', l: 'VEHÍCULO', x: 280, y: 112, attrs: ['*placa', 'marca', 'nro_puertas', 'cilindraje', 'capacidad_carga'], side: 'top', bad: true }] })),
+        fig(D.diagram({ w: 520, h: 330, nodes: [{ id: 's', t: 'E', l: 'VEHÍCULO', x: 260, y: 90, attrs: ['*placa', 'marca'], side: 'top' }, { id: 'c', t: 'ISA', l: 'd', x: 260, y: 165 },
+          { id: 'a', t: 'E', l: 'AUTO', x: 90, y: 245, attrs: ['nro_puertas'], side: 'bottom' }, { id: 'b', t: 'E', l: 'MOTO', x: 260, y: 245, attrs: ['cilindraje'], side: 'bottom' }, { id: 'd', t: 'E', l: 'CAMIÓN', x: 430, y: 245, attrs: ['capacidad_carga'], side: 'bottom' }],
+          edges: [{ a: 's', b: 'c', total: true }, { a: 'c', b: 'a', subset: true }, { a: 'c', b: 'b', subset: true }, { a: 'c', b: 'd', subset: true }] })),
+        'Una moto nunca tendría nro_puertas: cada tipo tiene datos propios → jerarquía.',
+        { enunciado: 'PUBLICACIÓN tiene: código, título, ISBN (solo libros), ISSN y volumen (solo revistas). ¿Qué propones?', respuesta: '<p>Superclase PUBLICACIÓN (código, título) y subclases LIBRO (isbn) y REVISTA (issn, volumen).</p>', explicacion: '<p>Los atributos que “solo aplican a algunos” son la señal.</p>' }),
+
+      err('Confundir participación con cardinalidad', 'Participación ↔ cardinalidad',
+        '<p>Creer que “total” significa “muchos”, o que una N implica obligatoriedad.</p>',
+        '<p>Ambas hablan de “cuántos”, pero una responde al máximo y la otra al mínimo.</p>',
+        '<p>Separa siempre las dos preguntas: “¿como máximo cuántos?” (1/N) y “¿es obligatorio?” (doble/simple).</p>',
+        fig(bin('CLIENTE', 'realiza', 'PEDIDO', '1', 'N', { ta: true, ea: 'bad' })) + '<p>Doble en CLIENTE “porque tiene muchos pedidos” ✗</p>',
+        fig(bin('CLIENTE', 'realiza', 'PEDIDO', '1', 'N', { tb: true })) + '<p>Doble en PEDIDO porque ningún pedido existe sin cliente ✓</p>',
+        'La línea doble no significa “muchos”: significa “todos deben participar”.',
+        { enunciado: '“Un empleado puede dirigir como máximo un departamento; todo departamento debe tener un director.” ¿Cardinalidad y participación?', respuesta: '<p><strong>1:1</strong>. DEPARTAMENTO total (doble); EMPLEADO parcial (simple).</p>', explicacion: '<p>El máximo es 1 en ambos sentidos (1:1). La obligatoriedad solo existe para el departamento.</p>' }),
+    ],
+  });
+})();

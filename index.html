@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aprende el Modelo Entidad-Relación</title>
+  <meta name="description" content="Curso interactivo para aprender el Modelo Entidad-Relación (MER) desde cero hasta nivel avanzado.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" id="menu-btn" aria-label="Abrir menú">☰</button>
+    <a class="brand" href="#/"><span class="brand-logo" aria-hidden="true">
+      <svg viewBox="0 0 40 24" width="40" height="24"><rect x="1" y="6" width="12" height="12" /><polygon points="20,4 28,12 20,20 12,12" /><ellipse cx="34" cy="12" rx="5" ry="4" /></svg>
+    </span><span>Curso MER</span></a>
+    <div class="crumb" id="crumb"></div>
+    <button class="icon-btn" id="theme-btn" aria-label="Cambiar tema claro/oscuro" title="Tema claro / oscuro">◐</button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Menú principal">
+      <div class="gprog"><div class="bar"><div id="gprog-bar"></div></div><span id="gprog-txt">0% completado</span></div>
+      <nav id="menu"></nav>
+      <p class="side-foot">Usa las flechas ← → del teclado para avanzar entre temas.</p>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+    <main class="main" id="content" tabindex="-1"></main>
+  </div>
+
+  <noscript><p class="noscript">Esta plataforma necesita JavaScript activado para funcionar.</p></noscript>
+
+  <!-- Motor y plantillas -->
+  <script src="js/diagram.js"></script>
+  <script src="js/render.js"></script>
+
+  <!-- Contenido: un archivo por módulo -->
+  <script src="js/contenido/01-fundamentos.js"></script>
+  <script src="js/contenido/02-simbologia.js"></script>
+  <script src="js/contenido/03-entidades.js"></script>
+  <script src="js/contenido/04-atributos.js"></script>
+  <script src="js/contenido/05-relaciones.js"></script>
+  <script src="js/contenido/06-cardinalidad.js"></script>
+  <script src="js/contenido/07-participacion.js"></script>
+  <script src="js/contenido/08-debiles.js"></script>
+  <script src="js/contenido/09-recursivas.js"></script>
+  <script src="js/contenido/10-generalizacion.js"></script>
+  <script src="js/contenido/11-leer-enunciado.js"></script>
+  <script src="js/contenido/12-construccion.js"></script>
+  <script src="js/contenido/13-errores.js"></script>
+  <script src="js/contenido/14-ejercicios.js"></script>
+  <script src="js/contenido/15-casos.js"></script>
+  <script src="js/contenido/16-practica-final.js"></script>
+
+  <!-- Aplicación -->
+  <script src="js/app.js"></script>
+</body>
+</html>
